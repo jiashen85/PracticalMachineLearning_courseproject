@@ -1,0 +1,11 @@
+---
+title: "Prediction Model For Weight Lifting Manner"
+author: "Tracy"
+date: "October 21, 2015"
+output: html_document
+---
+
+#Executive Summary
+#Reading and Cleansing the Data
+#Training and Verifying the Model
+#Predicting "New" Data and submitting the Answer
