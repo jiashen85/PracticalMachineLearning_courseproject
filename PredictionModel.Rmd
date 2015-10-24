@@ -2,41 +2,44 @@
 title: "Prediction Model For Weight Lifting Manner"
 author: "Tracy"
 date: "October 21, 2015"
-output: html_document
+output: 
+  html_document:
+    css: style.css
 ---
+#**1. Executive Summary**
 
-#1. Executive Summary
+The aim of this project to to predict the manner(classe A,B,C,D,E) in which the 6 healthy young men did their unilateral dumbbell bicep curl exercise.The report used the data collected from accelerometers on the belt, forearm, arm, and dumbell. A model is then built using PCA preProcessing method to narrow down variables and random forest method (with its own cross validation) to predict results. The model got 97.59% accuracy and out of sample error rate of 2.65%. The out of sample error rate comes from the out of bag sample error rate outside of the training data. 
 
-The aim of this project to to predict the manner(classe A,B,C,D,E) in which the 6 healthy young men did their unilateral dumbbell bicep curl exercise.The report used the data collected from accelerometers on the belt, forearm, arm, and dumbell. A model is then built using PCA preProcessing method to narrow down variables and cross validation to split data as well as random forest method to predict results. The model got 97.35% accuracy with out of sample error of...
-#2. Reading and Cleansing the Data
+
+#**2. Reading and Cleansing the Data**
 
 Frist, let's look into the data by loading both training and testing data in and used summary(training) and summary(testing). We found that training data has 160 variables and 19622 observations with significant number of missing value or zero value variabels. Affter observation, these missing values add up to 19k+ for every single variable that's affected. **Since these variables are calcultated rather than the objectively measured data and huge number of missing values tend to affect the model training in a great extent.Therefore We eliminate them and truncate the variable list down to 60 to get a new training set (training0).** Same applied to the testing data and we have a new set called *testing0*(60 variables).
 
-#3. Establishing the Prediction Model
+#**3. Establishing the Prediction Model**
 
 To predict, we follow this logic chain to proceed: **question -> input data -> features -> algorithm -> parameters -> evaluation**. In our case, **the question is "to predict the manner(classe variale in the data set) in which they did the exercise."** 
 
 **To input data**,since we've already read and cleansed the data. Here by inputing data, we mean split the data using cross validation concept. To this end, We split the given training data into a new training(namely train) and new testing data(namely test) using createDataPartition (){caret} and the testing data we are given becomes validation dataset. 
 
-**to extract the features**, we first **explore the data** by looking at the density of the outcome variable (**chart1**) and the featurePlot of different variables(**char2**). However,it's difficult to have an overarching picture of how the data looks due to the huge number of predictors. **Second, we need to know what would be considered as good features.** According to the lecture, good features are 1).Lead to data compression;2).Retain relevant information;3).Are created based on expert application knowledge. We know the studied data is about accelerometer sensor measurement. Therefore, any variables related to sensing specifics are relevant and necessary such as gyroscope, acceleration, magnet variables.Since there are A,B,C,D different styles of doing unilateral dumbbell bicep curls which differ in arm, hip and dumbbell positions, any variables related to that is necessary and should be retained. In our case, "roll","pitch","yaw" related variables need to be kept. **however, are they equally important for model predicting?** we know from the lecture that the more complicated the model is, the less scalable it is. It will potentially lead to overfitting as when we are capturing signal, we also capture noise. **Therefore, we will use a preprocessing method "Primary Component Analysis(PCA)"** to find the weighted combination of predictors and capture the most inforamtion possible. We set the threshold of PCA variance to be 95% which required 24 components.Therefore,we got a new dataset *train1* with only 25 variables (including the outcome variable 'classe') and *test1(25 variables too)* to be the new testing set within the big training data.
+**To extract the features**, we **first explore the data** by looking at the density of the outcome variable (**chart1**) and the featurePlot of different variables(**char2**). However,it's difficult to have an overarching picture of how the data looks due to the huge number of predictors. **Second, we need to know what would be considered as good features.** According to the lecture, good features are 1).Lead to data compression;2).Retain relevant information;3).Are created based on expert application knowledge. We know the studied data is about accelerometer sensor measurement. Therefore, any variables related to sensing specifics are relevant and necessary such as gyroscope, acceleration, magnet variables.Since there are A,B,C,D different styles of doing unilateral dumbbell bicep curls which differ in arm, hip and dumbbell positions, any variables related to that is necessary and should be retained. In our case, "roll","pitch","yaw" related variables need to be kept. **however, are they equally important for model predicting?** we know from the lecture that the more complicated the model is, the less scalable it is. It will potentially lead to overfitting as when we are capturing signal, we also capture noise. **Therefore, we will use a preprocessing method "Primary Component Analysis(PCA)"** to find the weighted combination of predictors and capture the most inforamtion possible. We set the threshold of PCA variance to be 95% which required 25 components.Therefore,we got a new dataset *train1* with only 26 variables (including the outcome variable 'classe') and *test1(26 variables too)* to be the new testing set within the big training data.
 
-**to develop an algorithm using random forest**, we built a model with random Forest function and then predict with this model fit.{caret} package itself has a random forest method called "rf" which takes above an hour to train the data. Therefore, we opted in using {randomForest} package which takes only a few minutes. **The randomForest by default uses cross validation as well**.Each tree is built using samples from the original data we pass to randomForest. Due to this sampling, each tree will leave out some rows (36.8% default). These rows are called out-of-bag samples. After each tree is built, the out-of-bag samples are run through the forest. After running the model, we created 500 trees and tried 4 random variables at each split. 
+**To develop an algorithm using random forest**, we built a model with random Forest function and then predict with this model fit.{caret} package itself has a random forest method called "rf" which takes above an hour to train the data. Therefore, we opted in using {randomForest} package which takes only a few minutes. **The randomForest by default uses cross validation as well**.Each tree is built using samples from the original data we pass to randomForest. Due to this sampling, each tree will leave out some rows (36.8% default). These rows are called out-of-bag samples. After each tree is built, the out-of-bag samples are run through the forest. After running the model, we created 500 trees and tried 5 random variables at each split. 
 
 After training the data, we predict with the test1 data which is the testing part we separated from the training data set we were given.
 
-**To evaluate the result**, using confusionMatrix function, we found 97.35% overll model accuracy and sensitivity and specicity for each type of "classe" is above 90% each. If printing out the model itself, it has OOB(out of bag) error rate of 2.5% which is a very small good rate. The ooB error rate is the out of sample error rate in random forest because of the unique way that random forest operates. 
+**To evaluate the result**, using confusionMatrix function, **we found 97.59% overll model accuracy and 2.41% out of sample error rate  (1-accuracy)**. If printing out the model itself, it has OOB(out of bag) estimate of error rate 2.5% which is well aligned with the overall out of sample error rate. The lecture specifies that the out of sample error rate is the error occured outside of the training dataset while the ooB error rate are from out-of-bag samples which are left out rows at each tree during training. Therefore, we go by with the overall out of sample error rate as it seems to fit the out of sample concept better. 
 
-This tells it's a really good model and proves that random forest as one of the most common CART methods has very high accuracy. However, the downside of using randomForest is that it will overfit a model.The reason is that a randomForest fittd model is normally complex, having many parameters relative to the number of observations. It is expected that the fitted relationship will appear to perform less well on a new data set than on the data set we used for fitting. Therefore, we need to use some techniques to avoid overfitting. 
+**Caveat of using RandomForest**  Random forest is one of the top performing models in machine learning with very high accuracy. However, the downside is it will overfit a model.The reason is that a randomForest fittd model is normally complex, having many parameters relative to the number of observations. It is expected that the fitted relationship will appear to perform less well on a new data set than on the data set we used for fitting. Therefore, it's normally suggested to use some techniques to avoid overfitting. 
 
 
-#4. Predicting "New" Data and submitting the Answer
+#**4. Predicting "New" Data and Submitting the Answer**
 
 Using the same PCA scheme to preprocess the testing file which was given by the project,we got 20 predictions and write them with the given write.table function to generate 20 txt file in the working directory.Submitting the answers, we got 18 out of 20 predictions correctly (problem 3 and 11 were wrong).  
 
-#5.Appendix
+#**5.Appendix**
 
 ```{r,echo=FALSE}
-library(caret);library(ggplot2)
+library(caret);library(ggplot2);library(dplyr)
 training = read.csv("./pml-training.csv", na.strings="NA",stringsAsFactors=FALSE)
 testing =read.csv("./pml-testing.csv", na.strings="NA",stringsAsFactors=FALSE)
 
@@ -51,14 +54,6 @@ training0=select(training0,-starts_with("amplitude"))
 
 #same applied to testing data
 testing0=testing[,!apply(testing,2,function(x) any(is.na(x)))]
-testing0=select(testing0,-starts_with("kurtosis"))
-testing0=select(testing0,-starts_with("skewness"))
-testing0=select(testing0,-starts_with("max"))
-testing0=select(testing0,-starts_with("min"))
-testing0=select(testing0,-starts_with("var"))
-testing0=select(testing0,-starts_with("stddev"))
-testing0=select(testing0,-starts_with("avg"))
-
 
 #splitting the data into 70% training and 30% testing data
 intrain=createDataPartition(y=training0$classe,p=0.7,list=FALSE)
@@ -75,23 +70,23 @@ featurePlot(x=train[,c("roll_belt","pitch_belt","yaw_belt")],
 
 
 #since pca only applies to numeric variables, the non-numeric variables have been excluded as they are not related variables anyway. 
-proc=preProcess(train[,-c(1:7,60)], method="pca",thresh = 0.95)
+
+set.seed(1235)
+proc=preProcess(train[,-c(1:7,60)], method="pca",thresh = 0.95,pcaComp = 25)
 train0=predict(proc,newdata=train[,-c(1:7,60)])
 train1=cbind(train0,train[,60])
-names(train1)[25]="classe"
+names(train1)[26]="classe"
 
 test0=predict(proc,newdata=test[,-c(1:7,60)])
 test1=cbind(test0,test[,60])
-names(test1)[25]="classe"
+names(test1)[26]="classe"
 
 #using randomForest to fit the model and predict within the 30% of the starting training data.
 
 library(randomForest)
 set.seed(1235)
-modfit=randomForest(classe~.,data=train1,importance=TRUE)
-modfit2=randomForest(classe~.,data=test1)
+modfit=randomForest(classe~.,data=train1)
 pred=predict(modfit,newdata=test1)
-pred1=predict(modfit2,newdata=test1)
 confusionMatrix(test$classe,pred)
 
 ```
@@ -118,14 +113,7 @@ str(training0)
 
 #same applied to testing data
 testing0=testing[,!apply(testing,2,function(x) any(is.na(x)))]
-testing0=testing
-testing0=select(testing0,-starts_with("kurtosis"))
-testing0=select(testing0,-starts_with("skewness"))
-testing0=select(testing0,-starts_with("max"))
-testing0=select(testing0,-starts_with("min"))
-testing0=select(testing0,-starts_with("var"))
-testing0=select(testing0,-starts_with("stddev"))
-testing0=select(testing0,-starts_with("avg"))
+
 
 
 #splitting the data into 70% training and 30% testing data
@@ -142,28 +130,32 @@ featurePlot(x=train[,c("roll_belt","pitch_belt","yaw_belt")],
             plot="pairs")
 
 #since pca only applies to numeric variables, the non-numeric variables have been excluded as they are not related variables anyway. 
-proc=preProcess(train[,-c(1:7,60)], method="pca",thresh = 0.95)
+proc=preProcess(train[,-c(1:7,60)], method="pca",thresh = 0.95,pcaComp = 25)
 train0=predict(proc,newdata=train[,-c(1:7,60)])
 train1=cbind(train0,train[,60])
-names(train1)[25]="classe"
+names(train1)[26]="classe"
 
 test0=predict(proc,newdata=test[,-c(1:7,60)])
 test1=cbind(test0,test[,60])
-names(test1)[25]="classe"
+names(test1)[26]="classe"
 
 #using randomForest to fit the model and predict within the 30% of the starting training data.
 library(randomForest)
 set.seed(1235)
-modfit=randomForest(classe~.,data=train1,importance=TRUE)
-modfit2=randomForest(classe~.,data=test1)
+modfit=randomForest(classe~.,data=train1)
 pred=predict(modfit,newdata=test1)
-pred1=predict(modfit2,newdata=test1)
+#accuracy calculation before confusion matrix:
+acu=mean(pred==test1$classe)
+
+#error rate=1-accuracy
+er=1-acu
+
 confusionMatrix(test$classe,pred)
 
 # predict on the validation data
 testing1=predict(proc,newdata=testing0[,-c(1:7,60)])
 testing2=cbind(testing1,testing0[,60])
-names(testing2)[25]="classe"
+names(testing2)[26]="classe"
 pred1=predict(modfit,newdata=testing2)
 
 #wring the answers into txt file
