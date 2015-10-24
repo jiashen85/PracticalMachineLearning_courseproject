@@ -8,7 +8,7 @@ output:
 ---
 #**1. Executive Summary**
 
-The aim of this project to to predict the manner(classe A,B,C,D,E) in which the 6 healthy young men did their unilateral dumbbell bicep curl exercise.The report used the data collected from accelerometers on the belt, forearm, arm, and dumbell. A model is then built using PCA preProcessing method to narrow down variables and random forest method (with its own cross validation) to predict results. The model got 97.59% accuracy and out of sample error rate of 2.65%. The out of sample error rate comes from the out of bag sample error rate outside of the training data. 
+The aim of this project to to predict the manner(classe A,B,C,D,E) in which the 6 healthy young men did their unilateral dumbbell bicep curl exercise.The report used the data collected from accelerometers on the belt, forearm, arm, and dumbell. A model is then built using PCA preProcessing method to narrow down variables and random forest method (with its own cross validation) to predict results. The model got 97.59% accuracy and out of sample error rate of 2.41%. The out of sample error rate comes from the testing data outside of the training data. 
 
 
 #**2. Reading and Cleansing the Data**
@@ -19,28 +19,28 @@ Frist, let's look into the data by loading both training and testing data in and
 
 To predict, we follow this logic chain to proceed: **question -> input data -> features -> algorithm -> parameters -> evaluation**. In our case, **the question is "to predict the manner(classe variale in the data set) in which they did the exercise."** 
 
-**step1: To input data**,since we've already read and cleansed the data. Here by inputing data, we mean split the data using cross validation concept. To this end, We split the given training data into a new training(namely train) and new testing data(namely test) using createDataPartition (){caret} and the testing data we are given becomes validation dataset. 
+**Step1: To input data**,since we've already read and cleansed the data. Here by inputing data, we mean split the data into 70% training and 30% testing using createDataPartition (){caret} function.The split training data is called *train* and split testing data is called *test*. The testing data we loaded becomes validation dataset. 
 
-**step2: To extract the features**, we **first explore the data** by looking at the density of the outcome variable (**chart1**) and the featurePlot of different variables(**char2**). However,it's difficult to have an overarching picture of how the data looks due to the huge number of predictors. **Second, we need to know what would be considered as good features.** According to the lecture, good features are 1).Lead to data compression;2).Retain relevant information;3).Are created based on expert application knowledge. We know the studied data is about accelerometer sensor measurement. Therefore, any variables related to sensing specifics are relevant and necessary such as gyroscope, acceleration, magnet variables.Since there are A,B,C,D different styles of doing unilateral dumbbell bicep curls which differ in arm, hip and dumbbell positions, any variables related to that is necessary and should be retained. In our case, "roll","pitch","yaw" related variables need to be kept. **however, are they equally important for model predicting?** we know from the lecture that the more complicated the model is, the less scalable it is. It will potentially lead to overfitting as when we are capturing signal, we also capture noise. **Therefore, we will use a preprocessing method "Primary Component Analysis(PCA)"** to find the weighted combination of predictors and capture the most inforamtion possible. We set the threshold of PCA variance to be 95% which required 25 components.Therefore,we got a new dataset *train1* with only 26 variables (including the outcome variable 'classe') and *test1(26 variables too)* to be the new testing set within the big training data.
+**Step2: To extract the features**, we **first explore the data** by looking at the density of the outcome variable (**chart1**) and the featurePlot of different variables(**char2**). However,it's difficult to have an overarching picture of how the data looks due to the huge number of predictors. **Second, we need to know what would be considered as good features.** According to the lecture, good features are 1).Lead to data compression;2).Retain relevant information;3).Are created based on expert application knowledge. **We know the studied data is about accelerometer sensor measurement. Therefore, any variables related to sensing specifics are relevant and necessary such as gyroscope, acceleration, magnet variables.**Since there are A,B,C,D different styles of doing unilateral dumbbell bicep curls which differ in arm, hip and dumbbell positions, any variables related to that is necessary and should be retained. In our case, "roll","pitch","yaw" related variables need to be kept. **However, are they equally important for model predicting?** we know from the lecture that the more complicated the model is, the less scalable it is. It will potentially lead to overfitting as when we are capturing signal, we also capture noise. **Therefore, we will use a preprocessing method "Primary Component Analysis(PCA)"** to find the weighted combination of predictors and capture the most inforamtion possible. We set the threshold of PCA variance to be 95% which required 25 components.Therefore,we got a new dataset *train1* with only 26 variables (including the outcome variable 'classe') and *test1(26 variables too)* to be the new testing set within the big training data.
 
-**step3: To develop an algorithm using random forest**, we built a model with random Forest function and then predict with this model fit.{caret} package itself has a random forest method called "rf" which takes above an hour to train the data. Therefore, we opted in using {randomForest} package which takes only a few minutes. **The randomForest by default uses cross validation as well**.Each tree is built using samples from the original data we pass to randomForest. Due to this sampling, each tree will leave out some rows (36.8% default). These rows are called out-of-bag samples. After each tree is built, the out-of-bag samples are run through the forest. After running the model, we created 500 trees and tried 5 random variables at each split. 
+**Step3: To develop an algorithm using random forest**, we built a model with random Forest function and then predict with this model fit.{caret} package itself has a random forest method called "rf" which takes above an hour to train the data. Therefore, we opted in using {randomForest} package which takes only a few minutes. **The randomForest by default uses cross validation as well**.Each tree is built using samples from the original data we pass to randomForest. Due to this sampling, each tree will leave out some rows (36.8% default). These rows are called out-of-bag samples. After each tree is built, the out-of-bag samples are run through the forest. After running the model, we created 500 trees and tried 5 random variables at each split. 
 
-After training the data, we predict with the test1 data which is the testing part we separated from the training data set we were given.
+After training the data, we predict with the *test1* data which is the testing part we separated from the training data set we were given.
 
-**step4: To evaluate the result**, using confusionMatrix function, **we found 97.59% overll model accuracy and 2.41% out of sample error rate  (1-accuracy)**. If printing out the model itself, it has OOB(out of bag) estimate of error rate 2.5% which is well aligned with the overall out of sample error rate. The lecture specifies that the out of sample error rate is the error occured outside of the training dataset while the ooB error rate are from out-of-bag samples which are left out rows at each tree during training. Therefore, we go by with the overall out of sample error rate as it seems to fit the out of sample concept better. 
+**Step4: To evaluate the result**, using confusionMatrix function, **we found 97.59% overll model accuracy and 2.41% out of sample error rate  (1-accuracy)**. If printing out the model itself, it has OOB(out of bag) estimate of error rate 2.5% which is well aligned with the overall out of sample error rate. The lecture specifies that the out of sample error rate is the error occured outside of the training dataset while the OOB error rate are from out-of-bag samples which are left out rows at each tree during training. **Therefore, we go by with the overall out of sample error rate as it seems to fit the out of sample concept better.** 
 
 ***Caveat of using RandomForest**  Random forest is one of the top performing models in machine learning with very high accuracy. However, the downside is it will overfit a model.The reason is that a randomForest fittd model is normally complex, having many parameters relative to the number of observations. It is expected that the fitted relationship will appear to perform less well on a new data set than on the data set we used for fitting. Therefore, it's normally suggested to use some techniques to avoid overfitting. 
 
 
 #**4. Predicting "New" Data and Submitting the Answer**
 
-Using the same PCA scheme to preprocess the testing file which was given by the project,we got 20 predictions and write them with the given write.table function to generate 20 txt file in the working directory.Submitting the answers, we got 18 out of 20 predictions correctly (problem 3 and 11 were wrong).  
+Using the same PCA scheme to preprocess the testing file we originally loaded,we got 20 predictions and write them with the given write.table function to generate 20 txt file in the working directory.Submitting the answers, we got 20 out of 20 predictions correctly.  
 
 #**5.Appendix**
 
-It has two parts: 1) generate the charts; 2)collect all the code together for viewing convenience. 
+Part1: not shown and only used to generate the charts; Part 2: display all the code together for viewing convenience. 
 
-```{r,echo=FALSE}
+```{r,results='hide',warning=FALSE, message=FALSE,echo=FALSE,cache=TRUE}
 
 #part 1 is used to generate charts
 
@@ -66,12 +66,12 @@ train=training0[intrain,]
 test=training0[-intrain,]
 
 #need to print code and the charts
-qplot(classe,colour=user_name,data=train,geom="density")
+qplot(classe,colour=user_name,data=train,geom="density",main = "Chart 1: Density for Outcome Variable")
 
 library(Hmisc)
 featurePlot(x=train[,c("roll_belt","pitch_belt","yaw_belt")],
             y = train$classe,
-            plot="pairs")
+            plot="pairs",main="Chart2:Relationship between Different Variables")
 
 
 #since pca only applies to numeric variables, the non-numeric variables have been excluded as they are not related variables anyway. 
@@ -93,6 +93,14 @@ set.seed(1235)
 modfit=randomForest(classe~.,data=train1)
 pred=predict(modfit,newdata=test1)
 confusionMatrix(test$classe,pred)
+
+```
+
+```{r,echo=FALSE}
+df=matrix(c("0.9759","0.0241","< 2.2e-16"," 2.5%"), ncol=4, nrow=1,byrow=TRUE,dimnames=list("value", c("Accuracy","Out of Sample Error Rate", "P-Value ","OOB Error Rate")))
+          
+knitr::kable(df,format="pandoc",caption = "Chart3: ConfusionMatrix Results: 97.81% Accuracy ")
+
 
 ```
 
@@ -128,12 +136,12 @@ train=training0[intrain,]
 test=training0[-intrain,]
 str(train)
 #need to print code and the charts
-qplot(classe,colour=user_name,data=train,geom="density")
+qplot(classe,colour=user_name,data=train,geom="density",main = "Chart 1: Density for Outcome Variable")
 
 library(Hmisc)
 featurePlot(x=train[,c("roll_belt","pitch_belt","yaw_belt")],
             y = train$classe,
-            plot="pairs")
+            plot="pairs",main="Chart2:Relationship between Different Variables")
 
 #since pca only applies to numeric variables, the non-numeric variables have been excluded as they are not related variables anyway. 
 proc=preProcess(train[,-c(1:7,60)], method="pca",thresh = 0.95,pcaComp = 25)
@@ -157,6 +165,10 @@ acu=mean(pred==test1$classe)
 er=1-acu
 
 confusionMatrix(test$classe,pred)
+
+df=matrix(c("0.9759","0.0241","< 2.2e-16"," 2.5%"), ncol=4, nrow=1,byrow=TRUE,dimnames=list("value", c("Accuracy","Out of Sample Error Rate", "P-Value ","OOB Error Rate")))
+          
+knitr::kable(df,format="pandoc",caption = "Chart3: ConfusionMatrix Results: 97.81% Accuracy ")
 
 # predict on the validation data
 testing1=predict(proc,newdata=testing0[,-c(1:7,60)])
